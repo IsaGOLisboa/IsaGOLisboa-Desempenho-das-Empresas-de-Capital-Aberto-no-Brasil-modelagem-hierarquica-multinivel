@@ -155,14 +155,14 @@ remover_outliers_tukey <- function(df, coluna) {
 }
 
 
-# Remover outliers em ROA, liquidez_corrente, margem_liquida e IPCA usando o método de Tukey
+# Removendo outliers em ROA, liquidez_corrente, margem_liquida e IPCA usando o método de Tukey
 dados_sem_outliers_tukey <- remover_outliers_tukey(dados_outliers, "ROA")
 dados_sem_outliers_tukey <- remover_outliers_tukey(dados_sem_outliers_tukey, "liquidez_corrente")
 dados_sem_outliers_tukey <- remover_outliers_tukey(dados_sem_outliers_tukey, "margem_liquida")
 dados_sem_outliers_tukey <- remover_outliers_tukey(dados_sem_outliers_tukey, "cap_terc_patrimo_liquido")
 
 
-# Calcular a média e o intervalo de confiança (IC) do ROA por ano
+# Calculando a média e o intervalo de confiança (IC) do ROA por ano
 dados_agg <- dados_sem_outliers_tukey %>%
   group_by(ano) %>%
   summarise(
@@ -183,11 +183,11 @@ ggplot(dados_agg, aes(x = ano, y = mean_ROA)) +
        y = "Média do ROA") +
   theme_minimal()
 
-# Selecionar algumas empresas para comparar (exemplo com 5 empresas)
+# Selecionando algumas empresas para comparar (exemplo com 5 empresas)
 empresas_selecionadas <- unique(dados_sem_outliers_tukey$CNPJ_CIA)[1:5]  # Selecione 5 empresas ou mais
 
 
-# Filtrar o dataframe para incluir apenas essas empresas
+# Filtrando o dataframe para incluir apenas essas empresas
 dados_filtrados <- dados_sem_outliers_tukey %>%
   filter(CNPJ_CIA %in% empresas_selecionadas)
 
@@ -219,28 +219,28 @@ colnames(dados_sem_outliers_tukey)
 variaveis <- c("ROA", "margem_ebitda", "margem_liquida", "cap_terc_patrimo_liquido",
                "IPCA", "PIB", "SELIC", "divida_publica_pib", "cambio", "importacoes", "exportacoes")
 
-# Adicionar uma coluna de IDs fictícia (opcional)
+# Adicionando uma coluna de IDs fictícia (opcional)
 df_selecionado<- dados_outliers
 df_selecionado$id <- 1:nrow(df_selecionado)
 colnames(df_selecionado)[colnames(df_selecionado) == "divida_liquida_pib"] <- "divida_publica_pib"
 
 
-# Selecionar apenas as colunas numéricas para padronização
+# Selecionando apenas as colunas numéricas para padronização
 df_numeric <- df_selecionado[, sapply(df_selecionado, is.numeric)]
 
-# Padronizar as colunas numéricas
+# Padronizando as colunas numéricas
 df_padronizado <- as.data.frame(scale(df_numeric))
 
-# Adicionar uma coluna de IDs fictícia (opcional)
+# Adicionando uma coluna de IDs fictícia (opcional)
 df_padronizado$id <- 1:nrow(df_padronizado)
 
-# Transformar o dataframe padronizado de wide para long
+# Transformando o dataframe padronizado de wide para long
 df_long_padronizado <- melt(df_padronizado, id.vars = "id", variable.name = "variable", value.name = "value")
 
-# Selecionar apenas as variáveis de interesse em df_long
+# Selecionando apenas as variáveis de interesse em df_long
 df_long_filtrado <- df_long_padronizado[df_long_padronizado$variable %in% variaveis, ]
 
-# Criar o gráfico para as variáveis filtradas
+# Criando o gráfico para as variáveis filtradas
 ggplot(df_long_filtrado, aes(x = variable, y = value, fill = variable)) +
   geom_boxplot() +
   labs(title = "Distribuição das Variáveis Selecionadas",
@@ -253,7 +253,7 @@ ggplot(df_long_filtrado, aes(x = variable, y = value, fill = variable)) +
 
 
 
-# Criar as interações no DataFrame sem aplicar qualquer transformação
+# Criando as interações no DataFrame sem aplicar qualquer transformação
 dados_sem_outliers_tukey$liquidez_corrente_IPCA <- dados_sem_outliers_tukey$liquidez_corrente * dados_sem_outliers_tukey$IPCA
 dados_sem_outliers_tukey$margem_ebitda_IPCA <- dados_sem_outliers_tukey$margem_ebitda * dados_sem_outliers_tukey$IPCA
 dados_sem_outliers_tukey$cap_terc_patrimo_liquido_IPCA <- dados_sem_outliers_tukey$cap_terc_patrimo_liquido * dados_sem_outliers_tukey$IPCA
@@ -274,7 +274,7 @@ dados_sem_outliers_tukey$cap_terc_patrimo_liquido_importacoes <- dados_sem_outli
 #####################################################################################################################
 ##########################     modelo nulo sem transformação          ###############################################
 #####################################################################################################################
-# Ajustar o modelo de efeitos mistos utilizando as variáveis sem transformação
+# Ajustando o modelo de efeitos mistos utilizando as variáveis sem transformação
 modelo_nulo_st_2 <- lmer(ROA ~ 1 + 
                        (1  | empresa_factor),
                      data = dados_sem_outliers_tukey)
@@ -282,7 +282,7 @@ modelo_nulo_st_2 <- lmer(ROA ~ 1 +
 # Resumo do modelo ajustado
 summary(modelo_nulo_st_2)
 
-# Simular resíduos com DHARMa para verificar a adequação do modelo
+# Simulando resíduos com DHARMa para verificar a adequação do modelo
 res_modelo <- simulateResiduals(fittedModel = modelo_nulo_st_2, n = 1000)
 
 # Plotar os resíduos simulados
@@ -298,7 +298,7 @@ testDispersion(res_modelo)
 hist(residuals(modelo_final), main = "Histograma dos Resíduos", xlab = "Resíduos", breaks = 30)
 
 ##### teste de hipóteses para variâncias dos termos de erro
-# Ajustar o modelo de efeitos mistos utilizando as variáveis transformadas por Box-Cox
+# Ajustando o modelo de efeitos mistos utilizando as variáveis transformadas por Box-Cox
 modelo_nulo_st <- lme(fixed = ROA ~ 1 , 
                     random = ~ 1  | empresa_factor,
                     data = dados_sem_outliers_tukey,
@@ -352,33 +352,33 @@ remover_outliers_tukey <- function(df, coluna) {
   return(df_sem_outliers)
 }
 
-# Remover outliers nas variáveis de interesse
+# Removendo outliers nas variáveis de interesse
 dados_sem_outliers <- remover_outliers_tukey(dados_setor, "ROA")
 #dados_sem_outliers <- remover_outliers_tukey(dados_sem_outliers, "margem_ebitda")
 #dados_sem_outliers <- remover_outliers_tukey(dados_sem_outliers, "liquidez_corrente")
 #dados_sem_outliers <- remover_outliers_tukey(dados_sem_outliers, "margem_liquida")
 #dados_sem_outliers <- remover_outliers_tukey(dados_sem_outliers, "cap_terc_patrimo_liquido")
 
-# Verificar o número de observações após a remoção dos outliers
+# Verificando o número de observações após a remoção dos outliers
 cat("Número total de observações após a remoção de outliers:", nrow(dados_sem_outliers), "\n")
 
-# Certifique-se de que setor_economico está como fator
+# Certificando que setor_economico está como fator
 dados_setor$setor_economico <- as.factor(dados_setor$setor_economico)
 
-# Definir a categoria de referência (por exemplo, "Setor A")
+# Definindo a categoria de referência (por exemplo, "Setor A")
 dados_setor$setor_economico <- relevel(dados_setor$setor_economico, ref = "Bens Industriais")
 
-# Gerar as dummies novamente com a categoria de referência
+# Gerando as dummies novamente com a categoria de referência
 dummies_setor <- model.matrix(~ setor_economico - 1, data = dados_setor)
 
-# Converter para data.frame e adicionar a coluna CNPJ_CIA
+# Convertendo para data.frame e adicionar a coluna CNPJ_CIA
 dummies_setor <- as.data.frame(dummies_setor)
 dummies_setor$CNPJ_CIA <- dados_setor$CNPJ_CIA
 
-# Reordenar colunas para que CNPJ_CIA seja a primeira
+# Reordenando colunas para que CNPJ_CIA seja a primeira
 dummies_setor <- dummies_setor[, c("CNPJ_CIA", setdiff(names(dummies_setor), "CNPJ_CIA"))]
 
-# Fazer a junção dos DataFrames usando a chave CNPJ_CIA
+# Fazendo a junção dos DataFrames usando a chave CNPJ_CIA
 dados_com_dummies <- merge(dados_sem_outliers_tukey, dummies_setor, by = "CNPJ_CIA", all.x = TRUE)
 
 
@@ -398,11 +398,11 @@ colnames(dados_com_dummies)[colnames(dados_com_dummies) == "setor_economicopetro
 # Aplicar a função aos nomes das colunas do DataFrame
 colnames(dados_com_dummies) <- ajustar_nomes_colunas(colnames(dados_com_dummies))
 
-# Exibir os novos nomes das colunas
+# Exibindo os novos nomes das colunas
 colnames(dados_com_dummies)
 #####Estimando o modelo
 ##### teste de hipóteses para variâncias dos termos de erro
-# Ajustar o modelo de efeitos mistos utilizando as variáveis transformadas por Box-Cox
+# Ajustando o modelo de efeitos mistos utilizando as variáveis transformadas por Box-Cox
 modelo_inc_st_setor <- lme(fixed = roa ~ liquidez_corrente + margem_ebitda +  cap_terc_patrimo_liquido+
                        setor_economicocomunicacoes + 
                        setor_economicoconsumo_ciclico + 
@@ -445,7 +445,7 @@ cat("p-value:", p_value, "\n")
 ###########Remoção das var categóricas
 ####Estimando o modelo
 ##### teste de hipóteses para variâncias dos termos de erro
-# Ajustar o modelo de efeitos mistos utilizando as variáveis transformadas por Box-Cox
+# Ajustando o modelo de efeitos mistos utilizando as variáveis transformadas por Box-Cox
 modelo_inc_st_setor_comun <- lme(fixed = roa ~ liquidez_corrente + margem_ebitda +  cap_terc_patrimo_liquido + setor_economicocomunicacoes,
                               random = ~ 1 | empresa_factor,
                            data = dados_com_dummies,
@@ -480,7 +480,7 @@ cat("p-value:", p_value, "\n")
 ##########################     modelo inclinações aleatórias por setor transformação    #############################
 #####################################################################################################################
 ##### teste de hipóteses para variâncias dos termos de erro
-# Criar as interações no DataFrame com as variáveis transformadas por Box-Cox
+# Criando as interações no DataFrame com as variáveis transformadas por Box-Cox
 dados_sem_outliers_tukey$liquidez_corrente_IPCA <- dados_sem_outliers_tukey$liquidez_corrente * dados_sem_outliers_tukey$IPCA
 dados_sem_outliers_tukey$margem_ebitda_IPCA <- dados_sem_outliers_tukey$margem_ebitda * dados_sem_outliers_tukey$IPCA
 dados_sem_outliers_tukey$cap_terc_patrimo_liquido_IPCA <- dados_sem_outliers_tukey$cap_terc_patrimo_liquido * dados_sem_outliers_tukey$IPCA
@@ -504,8 +504,8 @@ dados_sem_outliers_tukey <- merge(dados_sem_outliers_tukey,
                                   by.y = "cnpj_cia", 
                                   all.x = TRUE)
 
-# Ajustar o modelo de efeitos mistos utilizando as variáveis sem transformadas por Box-Cox
-# Escalar as variáveis contínuas
+# Ajustando o modelo de efeitos mistos utilizando as variáveis sem transformadas por Box-Cox
+# Escalando as variáveis contínuas
 
 '''modelo_inc_st <- lme(fixed = ROA ~ liquidez_corrente + margem_ebitda +  cap_terc_patrimo_liquido+
                         margem_ebitda_PIB + margem_ebitda_SELIC + margem_ebitda_IPCA + 
@@ -572,29 +572,29 @@ summary(modelo_inc_st_2)
 
 
 
-# Passo 1: Extraia os resíduos do modelo
+# Extraindo os resíduos do modelo
 residuos <- residuals(modelo_inc_st_2)
 
-# Passo 2: Padronize os resíduos (opcional, mas recomendado)
+# Padronizando os resíduos (opcional, mas recomendado)
 residuos_padronizados <- (residuos - mean(residuos)) / sd(residuos)
 
-# Passo 3: Aplique o teste de Kolmogorov-Smirnov
+# Aplicando o teste de Kolmogorov-Smirnov
 ks_resultado <- ks.test(residuos_padronizados, "pnorm")
 
 # Exibindo o resultado
 print(ks_resultado)
 
-# Passo 4: Criar o gráfico Q-Q
+# Criando o gráfico Q-Q
 qqnorm(residuos_padronizados)
 qqline(residuos_padronizados, col = "red", lwd = 2)
 
-# Passo 5: Adicionar título ao gráfico
+# Adicionando título ao gráfico
 title("Q-Q Plot dos Resíduos Padronizados")
 
-# Plotar o histograma dos resíduos
+Plotando o histograma dos resíduos
 hist(residuals(modelo_inc_st_2), main = "Histograma dos Resíduos", xlab = "Resíduos", breaks = 30)
 
-# Extraindo os resíduos de nível 1 (resíduos idiossincráticos)
+Extraindo os resíduos de nível 1 (resíduos idiossincráticos)
 residuos<-residuals(modelo_inc_st)
 
 resultado_sf <- sf.test(residuos)
@@ -624,7 +624,7 @@ remover_outliers <- function(df, coluna) {
   return(df_sem_outliers)
 }
 
-# Remover outliers em ROA, liquidez_corrente, margem_liquida e IPCA
+# Removendo outliers em ROA, liquidez_corrente, margem_liquida e IPCA
 dados_sem_outliers <- remover_outliers(dados_outliers, "ROA")
 dados_sem_outliers <- remover_outliers(dados_sem_outliers, "liquidez_corrente")
 dados_sem_outliers <- remover_outliers(dados_sem_outliers, "margem_liquida")
@@ -633,10 +633,10 @@ dados_sem_outliers <- remover_outliers(dados_sem_outliers, "cap_terc_patrimo_liq
 num_cnpj_unicos <- length(unique(dados_sem_outliers$CNPJ_CIA))
 cat("Número de CNPJ_CIA únicos:", num_cnpj_unicos, "\n")
 
-# Aplicar a transformação quadrada em ROA
+# Aplicando a transformação quadrada em ROA
 dados_sem_outliers$ROA_quadrado <- dados_sem_outliers$ROA^2
 
-# Aplicar a transformação de Box-Cox em ROA_quadrado
+# Aplicando a transformação de Box-Cox em ROA_quadrado
 min_roa <- min(dados_sem_outliers$ROA_quadrado, na.rm = TRUE)
 constante_roa <- abs(min_roa) + 1
 dados_sem_outliers$adjusted_ROA <- dados_sem_outliers$ROA_quadrado + constante_roa
@@ -654,7 +654,7 @@ if (lambda_otimo_roa == 0) {
   dados_sem_outliers$boxcox_ROA <- (dados_sem_outliers$adjusted_ROA ^ lambda_otimo_roa - 1) / lambda_otimo_roa
 }
 
-# Criar as interações no DataFrame com as variáveis transformadas por Box-Cox
+# Criando as interações no DataFrame com as variáveis transformadas por Box-Cox
 dados_sem_outliers$liquidez_corrente_IPCA <- dados_sem_outliers$liquidez_corrente * dados_sem_outliers$IPCA
 dados_sem_outliers$margem_ebitda_IPCA <- dados_sem_outliers$margem_ebitda * dados_sem_outliers$IPCA
 dados_sem_outliers$cap_terc_patrimo_liquido_IPCA <- dados_sem_outliers$cap_terc_patrimo_liquido * dados_sem_outliers$IPCA
@@ -671,7 +671,7 @@ dados_sem_outliers$liquidez_corrente_importacoes <- dados_sem_outliers$liquidez_
 dados_sem_outliers$margem_ebitda_importacoes <- dados_sem_outliers$margem_ebitda * dados_sem_outliers$importacoes
 dados_sem_outliers$cap_terc_patrimo_liquido_importacoes <- dados_sem_outliers$cap_terc_patrimo_liquido * dados_sem_outliers$importacoes
 
-# Ajustar o modelo de efeitos mistos utilizando as variáveis transformadas por Box-Cox
+# Ajustando o modelo de efeitos mistos utilizando as variáveis transformadas por Box-Cox
 modelo_final_2 <- lmer(boxcox_ROA ~ liquidez_corrente + margem_ebitda + margem_ebitda_PIB +
                          (1 + margem_ebitda | empresa_factor),
                        data = dados_sem_outliers)
@@ -679,29 +679,29 @@ modelo_final_2 <- lmer(boxcox_ROA ~ liquidez_corrente + margem_ebitda + margem_e
 # Resumo do modelo ajustado
 summary(modelo_final_2)
 
-# Passo 1: Extraia os resíduos do modelo
+# Extraindo os resíduos do modelo
 residuos <- residuals(modelo_final_2)
 
-# Passo 2: Padronize os resíduos (opcional, mas recomendado)
+# Padronizando os resíduos (opcional, mas recomendado)
 residuos_padronizados <- (residuos - mean(residuos)) / sd(residuos)
 
-# Passo 3: Aplique o teste de Kolmogorov-Smirnov
+# Aplicando o teste de Kolmogorov-Smirnov
 ks_resultado <- ks.test(residuos_padronizados, "pnorm")
 
 # Exibindo o resultado do teste KS
 print(ks_resultado)
 
-# Passo 4: Criar o gráfico Q-Q
+# Criando o gráfico Q-Q
 qqnorm(residuos_padronizados)
 qqline(residuos_padronizados, col = "red", lwd = 2)
 
-# Passo 5: Adicionar título ao gráfico
+# Adicionando título ao gráfico
 title("Q-Q Plot dos Resíduos Padronizados")
 
-# Plotar o histograma dos resíduos
+# Plotando o histograma dos resíduos
 hist(residuals(modelo_final_2), main = "Histograma dos Resíduos", xlab = "Resíduos", breaks = 30)
 
-# Ajustar o modelo de efeitos mistos utilizando as variáveis transformadas por Box-Cox com controle
+# Ajustando o modelo de efeitos mistos utilizando as variáveis transformadas por Box-Cox com controle
 modelo_final <- lme(fixed = boxcox_ROA ~ liquidez_corrente + margem_ebitda  + margem_ebitda_PIB , 
                     random = ~ 1 + margem_ebitda | empresa_factor,
                     data = dados_sem_outliers,
@@ -877,11 +877,11 @@ plot_intercept4 <- random_effects %>%
         panel.grid = element_line("grey95"),
         legend.position = "none")
 
-# Combinar os gráficos em uma única visualização
+# Combinando os gráficos em uma única visualização
 plot_dividido_intercepts <- plot_grid(plot_intercept1, plot_intercept2, plot_intercept3, plot_intercept4,
                                       ncol = 2, nrow = 2)
 
-# Exibir o gráfico
+# Exibindo o gráfico
 print(plot_dividido_intercepts)
 
 
@@ -899,7 +899,7 @@ ggplot(dados_sem_outliers, aes(x = liquidez_corrente)) +
 
 
 ######Comparação LogLik dos modelos:
-# Criar um data frame com os log-likelihoods dos modelos
+# Criando um data frame com os log-likelihoods dos modelos
 ll_data <- data.frame(
   Modelo = c("OLS_Nulo", "HLM2_Final_Nulo", "HLM2_Final"),
   LogLik = c(logLik(modelo_ols),
@@ -907,10 +907,10 @@ ll_data <- data.frame(
              logLik(modelo_final))
 )
 
-# Ajustar os nomes das variáveis, caso necessário
+# Ajustando os nomes das variáveis, caso necessário
 ll_data$Modelo <- factor(ll_data$Modelo, levels = c("OLS_Nulo", "HLM2_Final_Nulo", "HLM2_Final"))
 
-# Plotar a comparação dos log-likelihoods
+# Plotando a comparação dos log-likelihoods
 ggplot(ll_data, aes(x = Modelo, y = abs(LogLik), fill = Modelo)) +
   geom_bar(stat = "identity") +
   geom_label(aes(label = round(LogLik, 3)), hjust = 1.1, color = "white", size = 6) +
